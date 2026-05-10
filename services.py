@@ -1,28 +1,72 @@
-class FlowerService:
+class Subject:
+    def __init__(self):
+        self._observers = []
+
+    def attach(self, observer):
+        self._observers.append(observer)
+
+    def notify(self, action, detail, user_email):
+        for observer in self._observers:
+            observer.update(action, detail, user_email)
+
+class NotificationService:
+    def update(self, action, detail, user_email):
+        print(f"\n--- EMAIL SIMULATION ---")
+        print(f"To: {user_email}")
+        print(f"Event: {action}")
+        print(f"Detail: {detail}")
+        print(f"------------------------\n")
+
+class UserService:
     def __init__(self, repository):
         self.repository = repository
 
-    def get_catalog(self, user_role, color=None, sort_by=None):
+    def login(self, email, password):
+        user = self.repository.get_user_by_credentials(email, password)
+        if user:
+            return {
+                'role': user.role,
+                'email': user.email,
+                'name': user.name
+            }
+        return None
+
+class FlowerService(Subject):
+    def __init__(self, repository):
+        super().__init__()
+        self.repository = repository
+
+    def get_catalog(self, color=None, sort_by=None):
         return self.repository.get_filtered_sorted(color, sort_by)
 
-    def add_new_flower(self, user_role, name, color, price, stock):
-        if user_role == "Admin" :
+    def add_new_flower(self, user_role, user_email, name, color, price, stock):
+        if user_role == "Admin":
             from entities import Flower
-            if price < 0:
-                raise ValueError("Price cannot be negative")
             new_flower = Flower(None, name, color, price, stock)
             self.repository.add_flower(new_flower)
+            self.notify("CREATED", f"Flower: {name}", user_email)
         else:
-            raise PermissionError("Only admin can add new flowers")
+            raise PermissionError("Only Admins can add flowers.")
 
-    def update_flower_stock(self, user_role, flower_id, amount):
-        if user_role in ["Admin", "Florist"] :
-            self.repository.update_flower_stock(flower_id, amount)
+    def update_flower_stock(self, user_role, user_email, flower_id, new_stock):
+        if user_role in ["Admin", "Florist"]:
+            flower = self.repository.get_by_id(flower_id)
+            if flower:
+                self.repository.update_stock(flower_id, new_stock)
+                self.notify("UPDATED", f"Stock for {flower.name} set to {new_stock}", user_email)
         else:
-            raise PermissionError("Only Admin or Florist can update the stock")
+            raise PermissionError("Unauthorized to update stock.")
 
-    def delete_flower(self, user_role, flower_id):
-        if user_role == "Admin" :
-            self.repository.delete_flower(flower_id)
+    def delete_flower(self, user_role, user_email, flower_id):
+        if user_role == "Admin":
+            flower = self.repository.get_by_id(flower_id)
+            if flower:
+                self.repository.delete_flower(flower_id)
+                self.notify("DELETED", f"Flower: {flower.name}", user_email)
+
+    def update_flower_details(self, user_role, user_email, flower_id, name, color, price, stock):
+        if user_role == "Admin":
+            self.repository.update_flower(flower_id, name, color, price, stock)
+            self.notify("UPDATED", f"Modified details for {name} (ID: {flower_id})", user_email)
         else:
-            raise PermissionError("Only Admin can delete flowers")
+            raise PermissionError("Only Admins can modify flower details.")

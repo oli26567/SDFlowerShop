@@ -1,0 +1,21 @@
+<form method="get" action="/catalog" style="background: #fafafa; padding: 15px; border-radius: 5px; display: flex; gap: 10px;">
+    <select name="color">
+        <option value="">All Colors</option>
+        <option value="Red" {% if request.args.get('color') == 'Red' %}selected{% endif %}>Red</option>
+        <option value="Orange" {% if request.args.get('color') == 'Orange' %}selected{% endif %}>Orange</option>
+        <option value="Yellow" {% if request.args.get('color') == 'Yellow' %}selected{% endif %}>Yellow</option>
+        <option value="Green" {% if request.args.get('color') == 'Green' %}selected{% endif %}>Green</option>
+        <option value="Blue" {% if request.args.get('color') == 'Blue' %}selected{% endif %}>Blue</option>
+        <option value="Indigo" {% if request.args.get('color') == 'Indigo' %}selected{% endif %}>Indigo</option>
+        <option value="Violet" {% if request.args.get('color') == 'Violet' %}selected{% endif %}>Violet</option>
+        <option value="White" {% if request.args.get('color') == 'White' %}selected{% endif %}>White</option>
+    </select>
+
+    <select name="sort">
+        <option value="name" {% if request.args.get('sort') == 'name' %}selected{% endif %}>Sort by Name</option>
+        <option value="price_asc" {% if request.args.get('sort') == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+        <option value="price_desc" {% if request.args.get('sort') == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+    </select>
+
+    <button type="submit">Apply</button>
+</form>

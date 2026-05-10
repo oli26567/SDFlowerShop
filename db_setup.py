@@ -27,6 +27,17 @@ def init_db():
     cur.execute("INSERT OR IGNORE INTO flowers (name, color, price, stock) VALUES ('Red Rose', 'Red', 5.50, 100)")
     cur.execute("INSERT OR IGNORE INTO flowers (name, color, price, stock) VALUES ('White Lily', 'White', 7.00, 50)")
 
+    cur.execute("""
+                INSERT
+                OR IGNORE INTO users (name, email, password, roles) 
+        VALUES ('Admin User', 'admin@flowershop.com', 'admin123', 'Admin')
+                """)
+    cur.execute("""
+                INSERT
+                OR IGNORE INTO users (name, email, password, roles) 
+        VALUES ('Florist User', 'florist@flowershop.com', 'flower123', 'Florist')
+                """)
+
     conn.commit()
     conn.close()
     print("Database created successfully")

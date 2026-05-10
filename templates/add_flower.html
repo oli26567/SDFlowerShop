@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add New Flower</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { background: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; width: 100%; }
+        .back-link { display: block; margin-top: 15px; text-align: center; color: #666; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h2>Add New Flower Listing</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>Flower Name:</label>
+            <input type="text" name="name" required>
+        </div>
+        <div class="form-group">
+            <label>Color:</label>
+            <select name="color">
+                <option value="Red">Red</option>
+                <option value="Orange">Orange</option>
+                <option vn value="Green">Green</option>
+                <option value="Blue">Blue</option>
+                <option value="Indigo">Indigo</option>
+                <option value="Violet">Violet</option>
+                <option value="White">White</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Price ($):</label>
+            <input type="number" step="0.01" name="price" required>
+        </div>
+        <div class="form-group">
+            <label>Stock Quantity:</label>
+            <input type="number" name="stock" required>
+        </div>
+        <button type="submit">Save Flower</button>
+    </form>
+    <a href="/" class="back-link">Cancel and Return Home</a>
+</body>
+</html>

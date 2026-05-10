@@ -1,56 +1,43 @@
-<form method="get" action="/">
-    <!-- Filtering Dropdown -->
-    <select name="color">
-        <option value="">All Colors</option>
-        <option value="Red">Red</option>
-        <option value="White">White</option>
-        <option value="Yellow">Yellow</option>
-    </select>
+{% extends "layout.html" %}
+{% block content %}
 
-    <!-- Sorting Dropdown -->
-    <select name="sort">
-        <option value="name">Sort by Name</option>
-        <option value="price_asc">Price: Low to High</option>
-        <option value="price_desc">Price: High to Low</option>
-    </select>
-
-    <button type="submit">Apply</button>
-</form>
-
-<nav>
-    Current Role: <b>{{ role }}</b> |
-    {% if role == 'Visitor' %}
-        <a href="/login">Login</a>
-    {% else %}
-        <a href="/logout">Logout</a>
+    <h2>Product Catalog</h2>
+    {% include "includes/_filters.html" %} {% include "includes/_exports.html" %} {% if role == 'Admin' %}
+        <div class="admin-panel"><a href="/add">+ Add New Flower</a></div>
     {% endif %}
-</nav>
 
-{% if role == 'Admin' %}
-    <hr>
-    <a href="/add">Add New Flower</a>
-    <hr>
-{% endif %}
-
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Price</th>
-        <th>Stock</th>
-        {% if role == 'Admin' %}<th>Actions</th>{% endif %}
-    </tr>
-    {% for flower in flowers %}
-    <tr>
-        <td>{{ flower.name }}</td>
-        <td>${{ flower.price }}</td>
-        <td>{{ flower.stock }}</td>
-        {% if role == 'Admin' %}
-        <td>
-            <form action="/delete/{{ flower.id }}" method="post">
-                <button type="submit">Delete</button>
-            </form>
-        </td>
-        {% endif %}
-    </tr>
-    {% endfor %}
-</table>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th><th>Price</th><th>Stock</th>
+                {% if role in ['Admin', 'Florist'] %}<th>Actions</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for flower in flowers %}
+            <tr>
+                <td>{{ flower.name }}</td>
+                <td>${{ "{:.2f}".format(flower.price) }}</td>
+                <td>
+                    {% if role in ['Admin', 'Florist'] %}
+                        <form action="/update-stock/{{ flower.id }}" method="POST">
+                            <input type="number" name="stock" value="{{ flower.stock }}" width="40">
+                            <button type="submit">Update</button>
+                        </form>
+                    {% else %}
+                        {{ flower.stock }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if role == 'Admin' %}
+                        <a href="/edit/{{ flower.id }}">Edit</a> |
+                        <form action="/delete/{{ flower.id }}" method="POST" style="display:inline;">
+                            <button type="submit">Delete</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

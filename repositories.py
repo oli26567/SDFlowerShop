@@ -1,43 +1,59 @@
 import sqlite3
-from entities import Flower
+from entities import Flower, User
+
+
+class DatabaseConnection:
+    _instance = None
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(DatabaseConnection, cls).__new__(cls)
+            cls._instance.connection = sqlite3.connect('flowershop.db', check_same_thread=False)
+        return cls._instance
+
+class UserRepository:
+    def __init__(self):
+        self.db = DatabaseConnection().connection
+
+    def get_user_by_credentials(self, email, password):
+        cur = self.db.cursor()
+        cur.execute("SELECT id, name, email, password, roles FROM users WHERE email = ? AND password = ?",
+                    (email, password))
+        row = cur.fetchone()
+
+        if row:
+            from entities import User
+            return User(row[0], row[1], row[2], row[3], row[4])
+        return None
 
 class FlowerRepository:
-    def __init__ (self, db_path="flowershop.db"):
-        self.db_path = db_path
+    def __init__ (self):
+        self.db = DatabaseConnection().connection
 
     def get_all(self):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
+        cur = self.db.cursor()
         cur.execute("SELECT * FROM flowers")
         rows = cur.fetchall()
-        conn.close()
         return [Flower(*row) for row in rows]
 
     def get_by_id(self, flower_id):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
+        cur = self.db.cursor()
         cur.execute("SELECT * FROM flowers WHERE id = ?", (flower_id,))
         row = cur.fetchone()
-        conn.close()
         return Flower(*row) if row else None
 
     def add_flower(self, flower):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-        cur.execute("INSERT INTO flowers (name, color, price, stock) VALUES (?, ?, ?, ?)", (flower.name, flower.color, flower.price, flower.stock))
-        conn.commit()
-        conn.close()
+        cur = self.db.cursor()
+        cur.execute("INSERT INTO flowers (name, color, price, stock) VALUES (?, ?, ?, ?)",
+                    (flower.name, flower.color, flower.price, flower.stock))
+        self.db.commit()
 
     def delete_flower(self, flower_id):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
+        cur = self.db.cursor()
         cur.execute("DELETE FROM flowers WHERE id = ?", (flower_id,))
-        conn.commit()
-        conn.close()
+        self.db.commit()
 
     def update_flower(self, flower_id, name, color, price, stock):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
+        cur = self.db.cursor()
         cur.execute("""
                     UPDATE flowers
                     SET name  = ?,
@@ -46,20 +62,15 @@ class FlowerRepository:
                         stock = ?
                     WHERE id = ?
                     """, (name, color, price, stock, flower_id))
-        conn.commit()
-        conn.close()
+        self.db.commit()
 
     def update_stock(self, flower_id, new_stock):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
+        cur = self.db.cursor()
         cur.execute("UPDATE flowers SET stock = ? WHERE id = ?", (new_stock, flower_id))
-        conn.commit()
-        conn.close()
+        self.db.commit()
 
     def get_filtered_sorted(self, color=None, sort_by=None):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-
+        cur = self.db.cursor()
         query = "SELECT * FROM flowers"
         params = []
 
@@ -67,15 +78,15 @@ class FlowerRepository:
             query += " WHERE color = ?"
             params.append(color)
 
-        if sort_by == 'price_asc':
-            query += " ORDER BY price ASC"
-        elif sort_by == 'price_desc':
-            query += " ORDER BY price DESC"
-        elif sort_by == 'name':
-            query += " ORDER BY name ASC"
+        sort_options = {
+            'name': 'name ASC',
+            'price_asc': 'price ASC',
+            'price_desc': 'price DESC'
+        }
+
+        if sort_by in sort_options:
+            query += f" ORDER BY {sort_options[sort_by]}"
 
         cur.execute(query, params)
-        rows = cur.fetchall()
-        conn.close()
-        return [Flower(*row) for row in rows]
+        return [Flower(*row) for row in cur.fetchall()]
 
