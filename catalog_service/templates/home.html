@@ -2,7 +2,9 @@
 {% block content %}
 
     <h2>Product Catalog</h2>
-    {% include "includes/_filters.html" %} {% include "includes/_exports.html" %} {% if role == 'Admin' %}
+    {% include "includes/_filters.html" %}
+    {% include "includes/_exports.html" %}
+    {% if role == 'Admin' %}
         <div class="admin-panel"><a href="/add">+ Add New Flower</a></div>
     {% endif %}
 
