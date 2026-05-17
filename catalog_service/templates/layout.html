@@ -3,18 +3,145 @@
 <head>
     <title>Flower Shop Catalog</title>
     <style>
-        body { font-family: sans-serif; max-width: 900px; margin: 20px auto; }
-        nav { background: #333; color: white; padding: 15px; display: flex; justify-content: space-between; }
-        nav a { color: white; text-decoration: none; }
+        :root {
+            --peony-pink: #fce4ec;
+            --deep-peony: #f06292;
+            --sage-green: #e8f5e9;
+            --leaf-green: #66bb6a;
+            --dark-leaf: #2e7d32;
+            --cloud-white: #ffffff;
+            --soft-shadow: 0 8px 30px rgba(0,0,0,0.05);
+        }
+
+        body {
+            background-color: #fdfbfb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #444;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Modern Centered Navigation Pill */
+        nav {
+            background: var(--cloud-white);
+            margin: 40px auto 20px;
+            max-width: 900px;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: var(--soft-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--peony-pink);
+        }
+
+        .nav-brand {
+            font-size: 1.3rem;
+            color: var(--dark-leaf);
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+            margin-left: 100px; /* Balances the logout button to keep title centered */
+        }
+
+        .nav-actions {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Logout Button Styling */
+        .action-btn {
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.85rem;
+            padding: 8px 18px;
+            border-radius: 50px;
+            transition: 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .logout-btn {
+            background-color: var(--sage-green);
+            color: var(--dark-leaf);
+            border: 1px solid rgba(102, 187, 106, 0.2);
+        }
+
+        .logout-btn:hover {
+            background-color: var(--peony-pink);
+            color: var(--deep-peony);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Table and Component Styles */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+        }
+
+        th {
+            color: var(--dark-leaf);
+            text-align: left;
+            padding: 12px 20px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--sage-green);
+        }
+
+        td {
+            padding: 15px 20px;
+            background: var(--cloud-white);
+            border-top: 1px solid #f9f9f9;
+            border-bottom: 1px solid #f9f9f9;
+        }
+
+        tr td:first-child { border-left: 1px solid #f9f9f9; border-radius: 15px 0 0 15px; }
+        tr td:last-child { border-right: 1px solid #f9f9f9; border-radius: 0 15px 15px 0; }
+
+        button, .btn {
+            border-radius: 12px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        button[type="submit"] { background: var(--leaf-green); color: white; }
     </style>
 </head>
 <body>
+
     <nav>
-        <span><strong>Flower Shop</strong> | Role: {{ role }}</span>
-        <a href="{{ url_for('logout') }}" style="color: white;">Exit Shop</a>
+        <div class="nav-brand">
+            🌸 Flower Garden Catalog
+        </div>
+
+        <div class="nav-actions">
+            {% if session.get('role') %}
+                <span style="font-size: 0.8rem; color: #999;">
+                    {{ session.get('role') }}
+                </span>
+                <a href="{{ url_for('logout') }}" class="action-btn logout-btn">
+                    Logout
+                </a>
+            {% endif %}
+        </div>
     </nav>
-    <div style="margin-top:20px;">
+
+    <div class="main-content">
         {% block content %}{% endblock %}
     </div>
+
 </body>
 </html>

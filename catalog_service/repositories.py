@@ -62,3 +62,12 @@ class FlowerRepository:
             cur = conn.cursor()
             cur.execute("DELETE FROM flowers WHERE id = ?", (flower_id,))
             conn.commit()
+
+    def update_flower(self, flower_id, name, color, price, stock):
+        with self._get_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "UPDATE flowers SET name = ?, color = ?, price = ?, stock = ? WHERE id = ?",
+                (name, color, price, stock, flower_id)
+            )
+            conn.commit()

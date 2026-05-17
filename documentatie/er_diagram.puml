@@ -1,0 +1,24 @@
+@startuml er_diagram
+skinparam linetype ortho
+
+title Flower Shop -- Entity-Relationship Diagram
+
+entity "Flower" as Flower {
+    * id : INTEGER <<PK>>
+    --
+    * name  : TEXT
+    * color : TEXT
+    * price : REAL
+    * stock : INTEGER
+}
+
+entity "User" as User {
+    * id : INTEGER <<PK>>
+    --
+    * name     : TEXT
+    * email    : TEXT <<UNIQUE>>
+    * password : TEXT
+    * role     : TEXT
+}
+
+@enduml

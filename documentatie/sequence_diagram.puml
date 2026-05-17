@@ -1,0 +1,77 @@
+@startuml sequence_diagram
+autonumber
+
+title Flower Shop -- Sequence Diagram: Admin Adds a New Flower
+
+actor Administrator as Admin
+participant "FlowerController" as FC
+participant "FlowerService" as FS
+participant "AddFlowerCommand" as CMD
+participant "FlowerRepository" as Repo
+participant "NotificationService" as NS
+database "flowers.db" as DB
+
+== Authentication ==
+
+Admin -> FC : POST /login\n{email, password}
+activate FC
+FC -> FS : login delegated to identity_service
+activate FS
+FS --> FC : {role, email, name}
+deactivate FS
+FC --> Admin : redirect /catalog (session set)
+deactivate FC
+
+== Navigate to Add Form ==
+
+Admin -> FC : GET /add
+activate FC
+FC --> Admin : render add_flower.html
+deactivate FC
+
+== Submit New Flower ==
+
+Admin -> FC : POST /add\n{name, color, price, stock}
+activate FC
+FC -> FS : add_new_flower("Admin", email,\n"Tulip", "Yellow", 5.0, 10)
+activate FS
+
+group Command Pattern
+    FS -> CMD : AddFlowerCommand(repo,\n"Tulip", "Yellow", 5.0, 10)
+    activate CMD
+    CMD -> Repo : add_flower("Tulip", "Yellow", 5.0, 10)
+    activate Repo
+    Repo -> DB : INSERT INTO flowers
+    DB --> Repo : ok
+    Repo --> CMD : done
+    deactivate Repo
+    CMD --> FS : done
+    deactivate CMD
+end
+
+group Observer Pattern
+    FS -> NS : notify("CREATED", "Flower: Tulip", email)
+    activate NS
+    NS --> FS : email simulated
+    deactivate NS
+end
+
+FS --> FC : done
+deactivate FS
+FC --> Admin : redirect /catalog
+deactivate FC
+
+== View Updated Catalog ==
+
+Admin -> FC : GET /catalog
+activate FC
+FC -> Repo : get_filtered_sorted(None, None)
+activate Repo
+Repo -> DB : SELECT * FROM flowers
+DB --> Repo : rows
+Repo --> FC : [Flower, ..., Tulip]
+deactivate Repo
+FC --> Admin : render home.html (catalog with new flower)
+deactivate FC
+
+@enduml

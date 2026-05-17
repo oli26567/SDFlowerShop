@@ -4,19 +4,70 @@
     <title>Welcome to Flower Shop</title>
     <style>
         .login-container {
-            width: 350px;
+            width: 380px;
             margin: 100px auto;
-            padding: 30px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+            padding: 45px;
+            background: white;
+            border-radius: 35px; /* Matches the big box curvature */
+            box-shadow: 0 20px 40px rgba(240, 98, 146, 0.12);
             text-align: center;
-            font-family: sans-serif;
+            border: 2px solid #fce4ec;
+            font-family: 'Segoe UI', sans-serif;
         }
-        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
-        .btn-login { background: #007bff; color: white; border: none; padding: 12px; width: 100%; cursor: pointer; border-radius: 5px; margin-top: 10px; }
-        .btn-visitor { display: block; margin-top: 20px; color: #666; text-decoration: none; font-size: 14px; }
-        .btn-visitor:hover { text-decoration: underline; }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border-radius: 15px; /* Rounded inputs */
+            border: 1px solid #f0f0f0;
+            background: #fafafa;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        input:focus { border-color: #f06292; }
+
+        /* THE FIX: Matching the button to the box style */
+        button {
+            background: #f06292; /* Peony Pink */
+            color: white;
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            border: none; /* Removes the black outline */
+            border-radius: 50px; /* Makes it a pill shape */
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(240, 98, 146, 0.2); /* Soft pink shadow */
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #ec407a; /* Slightly darker pink on hover */
+            transform: translateY(-2px); /* Floats up slightly */
+            box-shadow: 0 10px 25px rgba(240, 98, 146, 0.3);
+        }
+
+        .btn-visitor {
+            display: block;
+            margin-top: 25px;
+            color: #f06292;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-visitor:hover {
+            text-decoration: underline;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #fce4ec;
+            margin: 25px 0;
+        }
     </style>
 </head>
 <body>

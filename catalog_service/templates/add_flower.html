@@ -3,43 +3,142 @@
 <head>
     <title>Add New Flower</title>
     <style>
-        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 8px; box-sizing: border-box; }
-        button { background: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; width: 100%; }
-        .back-link { display: block; margin-top: 15px; text-align: center; color: #666; text-decoration: none; }
+        :root {
+            --peony-pink: #fce4ec;
+            --deep-peony: #f06292;
+            --sage-green: #e8f5e9;
+            --leaf-green: #66bb6a;
+            --dark-leaf: #2e7d32;
+            --cloud-white: #ffffff;
+            --soft-shadow: 0 15px 35px rgba(240, 98, 146, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #fdfbfb;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background: var(--cloud-white);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            border: 2px solid var(--peony-pink);
+            border-radius: 35px; /* Matches the login/nav curvature */
+            box-shadow: var(--soft-shadow);
+        }
+
+        h2 {
+            color: var(--dark-leaf);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            box-sizing: border-box;
+            border: 1px solid #f0f0f0;
+            border-radius: 15px;
+            background: #fafafa;
+            outline: none;
+            transition: 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--deep-peony);
+            background: white;
+        }
+
+        button {
+            background: var(--leaf-green);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 50px; /* Pill shape */
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 10px;
+            box-shadow: 0 8px 20px rgba(102, 187, 106, 0.2);
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: var(--dark-leaf);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(46, 125, 50, 0.3);
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 25px;
+            text-align: center;
+            color: var(--deep-peony);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <h2>Add New Flower Listing</h2>
-    <form method="POST">
-        <div class="form-group">
-            <label>Flower Name:</label>
-            <input type="text" name="name" required>
-        </div>
-        <div class="form-group">
-            <label>Color:</label>
-            <select name="color">
-                <option value="Red">Red</option>
-                <option value="Orange">Orange</option>
-                <option vn value="Green">Green</option>
-                <option value="Blue">Blue</option>
-                <option value="Indigo">Indigo</option>
-                <option value="Violet">Violet</option>
-                <option value="White">White</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Price ($):</label>
-            <input type="number" step="0.01" name="price" required>
-        </div>
-        <div class="form-group">
-            <label>Stock Quantity:</label>
-            <input type="number" name="stock" required>
-        </div>
-        <button type="submit">Save Flower</button>
-    </form>
-    <a href="/" class="back-link">Cancel and Return Home</a>
+    <div class="form-container">
+        <h2>🌸 New Flower Listing</h2>
+        <form method="POST">
+            {% if error %}
+            <div style="background:#fdecea; color:#c62828; border:1px solid #ef9a9a; border-radius:10px; padding:10px 15px; margin-bottom:16px; font-size:0.9rem;">
+                {{ error }}
+            </div>
+            {% endif %}
+            <div class="form-group">
+                <label>Flower Name</label>
+                <input type="text" name="name" placeholder="e.g. Midnight Rose" required>
+            </div>
+            <div class="form-group">
+                <label>Color</label>
+                <select name="color">
+                    <option value="Red">Red</option>
+                    <option value="Orange">Orange</option>
+                    <option value="Yellow">Yellow</option>
+                    <option value="Green">Green</option>
+                    <option value="Blue">Blue</option>
+                    <option value="Indigo">Indigo</option>
+                    <option value="Violet">Violet</option>
+                    <option value="Pink">Pink</option>
+                    <option value="White">White</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Price ($)</label>
+                <input type="number" step="0.01" min="0.01" name="price" placeholder="0.00" required>
+            </div>
+            <div class="form-group">
+                <label>Stock Quantity</label>
+                <input type="number" min="0" name="stock" placeholder="Enter amount" required>
+            </div>
+            <button type="submit">Save to Catalog</button>
+        </form>
+        <a href="/" class="back-link">← Cancel and Return Home</a>
+    </div>
 </body>
 </html>

@@ -1,141 +1,230 @@
-\section{Problem definition}
-\par This section describes the general objective of the project. You can extract the problem definition directly from the assignment document and complete it with anything else you consider necessary to explain what your application will do.
+\section{Problem Definition}
 
-\par This section should also introduce the following sections (the development phases) and describe what each of them is concerned with.
+\par This project implements a \textbf{Flower Shop} web application using a microservices architecture.
+The system allows users to browse, manage, and export a catalog of flowers, with role-based access control differentiating between Visitors, Florists, and Administrators.
 
-\par At the end you should include an additional paragraph listing the deliverables for this assignment.
-
-\section{Analysis phase - Use cases \& requirements}
-
-\subsection{Functional requirements}
-
-\par Functional requirements describe the operations that the system must perform.
-
-\par These requirements define the services the system provides and the expected system behavior. You usually derive them from the problem statement.
-
-Examples of functional requirements include:
-
+\par The application is composed of two independent microservices:
 \begin{itemize}
-\item The system must allow users to authenticate.
-\item The system must allow users to create, update and delete records.
-\item The system must allow users to search or filter data.
+    \item \textbf{catalog\_service} — manages the flower catalog, exposes the web interface, and handles all CRUD operations.
+    \item \textbf{identity\_service} — handles user authentication and returns user role information to the catalog service via HTTP.
 \end{itemize}
 
-\par For this laboratory, non-functional requirements are out of scope, but you can optionally exercise specifying some that are related to the assignment topic (such as security requirements, scalability, performance etc.).
+\par Each service has its own database, its own internal layered architecture, and communicates with the other via synchronous REST/HTTP calls.
 
-\subsection{Use cases}
-\par Use cases describe in text the interactions between actors and the system in order to accomplish specific tasks.
-
-\par Each use case should include:
-
+\par The deliverables for this assignment include:
 \begin{itemize}
-\item The actor initiating the interaction
-\item A description of the task being performed
-\item The result of a successful interaction
+    \item Source code hosted on GitHub with a dedicated branch for Assignment 3.
+    \item Unit tests for both microservices.
+    \item This documentation, including use case, ER, class, and sequence diagrams.
 \end{itemize}
 
-\par Do not forget to include a use case diagram here!
 
-\par An example of embedding an image in a LaTeX document:
+\section{Analysis Phase — Use Cases \& Requirements}
 
-\begin{figure}
+\subsection{Functional Requirements}
+
+\begin{itemize}
+    \item The system must allow unauthenticated users to browse the flower catalog as a Visitor.
+    \item The system must allow users to authenticate with an email and password.
+    \item The system must allow authenticated users to log out.
+    \item The system must allow Visitors and authenticated users to filter the catalog by color and sort by name or price.
+    \item The system must allow Visitors and authenticated users to export the catalog in JSON and CSV format.
+    \item The system must allow Florists and Administrators to update the stock quantity of a flower.
+    \item The system must allow Administrators to add new flowers to the catalog.
+    \item The system must allow Administrators to edit the name, color, price, and stock of an existing flower.
+    \item The system must allow Administrators to delete a flower from the catalog.
+    \item The system must notify users by email (simulated) when a catalog change is made under their account.
+\end{itemize}
+
+\subsection{Use Cases}
+
+\par The system has three actors. \textbf{Florist} inherits all use cases from \textbf{Visitor}, and \textbf{Administrator} inherits all use cases from \textbf{Florist}.
+
+\begin{itemize}
+    \item \textbf{View Catalog} — Any actor can browse the full flower list.
+    \item \textbf{Filter / Sort} — Any actor can filter by color or sort by name or price.
+    \item \textbf{Export Catalog} — Any actor can download the catalog as JSON or CSV.
+    \item \textbf{Browse as Guest} — Visitor can access the catalog without logging in.
+    \item \textbf{Login / Logout} — Any authenticated actor can log in and out.
+    \item \textbf{Update Stock} — Florist and Administrator can change the stock count of a flower.
+    \item \textbf{Add Flower} — Administrator only.
+    \item \textbf{Edit Flower} — Administrator only.
+    \item \textbf{Delete Flower} — Administrator only.
+\end{itemize}
+
+\begin{figure}[H]
 \centering
-\includegraphics[scale=0.5]{resources/cat.jpg}
-\caption{A cat for you}
+\includegraphics[scale=0.45]{resources/UseCase.drawio.png}
+\caption{Use Case Diagram}
 \end{figure}
 
 
-\section{Design phase}
+\section{Design Phase}
 
-\subsection{Architecture overview}
+\subsection{Architecture Overview}
 
-\par This subsection presents the high-level architecture of the application. It should describe how the system is divided into major components such as client applications, backend services and the database.
+\par The system follows a \textbf{microservices architecture}. Each service is an independent Python/Flask application with its own SQLite database, its own layered internal structure, and no shared state.
 
-\par The chosen architectural style such as client-server or layered architecture may be discussed here, with the advantages and disadvantages it brings.
+\par The two services communicate via synchronous HTTP: when a user submits login credentials through the catalog service web interface, the catalog service makes a POST request to the identity service at \texttt{http://localhost:5001/login} and receives back the user role and name.
 
-\subsection{Entity-relationship diagram}
+\par Both services implement a four-layer internal architecture:
+\begin{enumerate}
+    \item \textbf{Controller layer} — parses HTTP requests and delegates to the service layer.
+    \item \textbf{Service layer} — contains business logic and orchestrates commands and observers.
+    \item \textbf{Domain layer} — plain Python classes representing entities (\texttt{Flower}, \texttt{User}).
+    \item \textbf{Repository layer} — performs all SQL queries against the SQLite database.
+\end{enumerate}
 
-\par This subsection describes the database schema used by the application.
+\subsection{Entity-Relationship Diagram}
 
-\par The entity-relationship diagram should illustrate the structure of the database and the relationships between entities.
+\par The application uses two separate databases, one per microservice.
 
-\par Each table should be described briefly, including:
+\par The \textbf{flowers.db} database (owned by \texttt{catalog\_service}) contains a single \texttt{flowers} table with the columns: \texttt{id} (primary key), \texttt{name}, \texttt{color}, \texttt{price}, and \texttt{stock}.
 
+\par The \textbf{users.db} database (owned by \texttt{identity\_service}) contains a single \texttt{users} table with the columns: \texttt{id} (primary key), \texttt{name}, \texttt{email} (unique), \texttt{password}, and \texttt{role}. The role field accepts the values \texttt{Admin}, \texttt{Florist}, and \texttt{Visitor}.
+
+\par The two entities have no foreign-key relationship because the services are fully decoupled.
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6]{resources/ERD.drawio.png}
+\caption{Entity-Relationship Diagram}
+\end{figure}
+
+\subsection{Catalog Service}
+
+\par The catalog service is the main application. It is responsible for:
 \begin{itemize}
-\item Table purpose
-\item Important attributes
-\item Relationships with other tables
+    \item Rendering the web interface (HTML templates via Jinja2).
+    \item Performing CRUD operations on the flowers database.
+    \item Enforcing role-based access control (Admin, Florist, Visitor).
+    \item Communicating with the identity service for authentication.
+    \item Exporting catalog data in JSON and CSV format.
 \end{itemize}
 
-\subsection{Component X}
+\par Its internal layers are: \texttt{FlowerController} (controller), \texttt{FlowerService} (service), \texttt{Flower} (domain), \texttt{FlowerRepository} (repository).
+Read operations pass through \texttt{FlowerQueryService}, while write operations are encapsulated as \texttt{Command} objects.
 
-\par This subsection is an example to describe one of the main components of the system.This could represent the server application, a backend service or a specific module of the system.
+\subsection{Identity Service}
 
-\par The description should include the responsibilities of the component and how it interacts with other parts of the system.
+\par The identity service is a lightweight REST API responsible solely for user authentication.
+It exposes a single endpoint: \texttt{POST /login}, which accepts an email and password, validates them against the users database, and returns the user's name and role.
 
-\subsection{Component Y}
+\par Its internal layers are: \texttt{UserController} (controller), \texttt{UserService} (service), \texttt{User} (domain), \texttt{UserRepository} (repository).
 
-\par This subsection describes another component of the system, such as the client application or an additional service layer.
+\subsection{Design Patterns}
 
-\par Explain its role in the architecture and the type of functionality it provides.
+\par Three design patterns are applied in the implementation:
 
-\subsection{Design patterns}
+\paragraph{Command Pattern (Behavioral)}
+\par The \texttt{Command} abstract class defines a single \texttt{execute()} method. Every write operation — \texttt{AddFlowerCommand}, \texttt{UpdateStockCommand}, \texttt{UpdateFlowerCommand}, and \texttt{DeleteFlowerCommand} — is encapsulated as a concrete command object that stores its own repository reference. \texttt{FlowerService.execute\_command()} dispatches commands uniformly, decoupling the UI event from the repository call.
 
-\par This subsection explains the design patterns used in the system.
+\paragraph{Template Pattern (Behavioral)}
+\par The \texttt{FlowerExporter} abstract class defines the export algorithm in its \texttt{export()} method: fetch data, then call the abstract \texttt{transform()} method. \texttt{JsonExport} and \texttt{CsvExport} subclasses implement \texttt{transform()} for their respective formats. Adding a new format requires only a new subclass.
 
-\par For each pattern you should describe:
+\paragraph{Observer Pattern (Behavioral)}
+\par \texttt{FlowerService} extends \texttt{Subject} and maintains a list of observers. \texttt{NotificationService} is attached as an observer and simulates email notifications whenever a flower is created, updated, or deleted.
+
+\subsection{Class Diagram}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.38]{resources/ClassDiagram.drawio.png}
+\caption{Class Diagram}
+\end{figure}
+
+\subsection{Sequence Diagram}
+
+\par The most important workflow in the system is the process of an Administrator adding a new flower. This involves the complete flow: authentication via the identity service, form submission, execution of the \texttt{AddFlowerCommand}, and triggering the \texttt{NotificationService} observer.
+
+\par The sequence diagram illustrating this workflow is presented in the \texttt{documentatie/sequence\_diagram.puml} file.
+
+
+\section{Implementation Phase — Application}
+
+\subsection{Tools and Technologies}
 
 \begin{itemize}
-\item The category of the pattern (creational, structural, behavioral)
-\item The problem it solves
-\item The classes involved in the implementation
+    \item \textbf{Python 3.13} — primary programming language for both services.
+    \item \textbf{Flask} — lightweight web framework used to implement HTTP routes and render HTML templates.
+    \item \textbf{SQLite} — embedded relational database. Each service has its own \texttt{.db} file.
+    \item \textbf{Jinja2} — HTML templating engine bundled with Flask, used for the web interface.
+    \item \textbf{unittest} — Python standard library testing framework, used for unit tests in both services.
+    \item \textbf{requests} — HTTP client library used by the catalog service to call the identity service.
 \end{itemize}
 
-\subsection{Class diagrams}
+\par Flask was chosen for its simplicity and minimal boilerplate, making it easy to implement a clean layered architecture without framework-imposed conventions. SQLite was chosen to eliminate external database dependencies, keeping each service self-contained.
 
-\par Class diagrams describe the static structure of the system by presenting classes, attributes, methods and relationships between classes.
+\subsection{Application Structure}
 
-\par This section should include one or more class diagrams illustrating the internal organization of the system components.
-
-\subsection{Sequence diagrams}
-
-\par Sequence diagrams illustrate how objects interact during the execution of a particular use case.
-
-\par They show the order of method calls and message exchanges between system components.
-
-\section{Implementation phase - Application}
-
-\subsection{Tools and technologies}
-\par This subsection presents the technology stack used to implement the application.
-
-\par You should describe the main tools and technologies used during development, such as:
+\par The repository contains two top-level service directories:
 
 \begin{itemize}
-\item Programming language
-\item Database management system
-\item Frameworks or third-party libraries
-\item Communication protocols
+    \item \texttt{catalog\_service/} — contains \texttt{app.py} (bootstrap), \texttt{controllers/flower\_controller.py}, \texttt{FlowerService.py}, \texttt{queries.py}, \texttt{commands.py}, \texttt{repositories.py}, \texttt{entities.py}, \texttt{exporters.py}, \texttt{templates/}, and \texttt{test\_catalog.py}.
+    \item \texttt{identity\_service/} — contains \texttt{app.py} (bootstrap), \texttt{controllers/user\_controller.py}, \texttt{UserService.py}, \texttt{repositories.py}, \texttt{entities.py}, and \texttt{test\_identity.py}.
 \end{itemize}
 
-\par You should also explain the reasons for choosing these technologies.
+\par Each \texttt{app.py} is a thin bootstrap file: it wires dependencies (repository, service, controller) and registers Flask routes by delegating to the controller. No business logic lives in \texttt{app.py}.
 
-\subsection{Application structure}
+\subsection{User Manual}
 
-\par This subsection describes the structure of the source code and how the project is organized. For example, you may describe packages, modules, or layers used in the application.
+\par To run the application, open two terminals and execute the following commands:
 
-\subsection{User manual}
-\par Here you should present the graphical user interface of the application and explain how users interact with the system.
+\begin{itemize}
+    \item Terminal 1 (identity service): \texttt{cd identity\_service \&\& python app.py}
+    \item Terminal 2 (catalog service): \texttt{cd catalog\_service \&\& python app.py}
+\end{itemize}
 
-\par The user manual should describe how a user can access the main functionalities of the application depending on their role.
+\par Then open a browser and navigate to \texttt{http://localhost:5002}.
 
-\par Don't be shy to include screenshots of the interface whenever necessary to illustrate the different features available to users!
+\par \textbf{Login page} — The default landing page prompts for email and password. Users may also click \emph{Browse as Visitor} to access the catalog without authentication.
 
-\section{Testing and validation}
+\par \textbf{Catalog page (Visitor)} — Displays all flowers with their name, price, and stock count. Filter by color and sort controls are available in the header.
 
-\par This section describes the methods used to verify that the application works correctly.
+\par \textbf{Catalog page (Florist)} — Same as Visitor, with an additional stock input field and Update button next to each flower.
 
-\par Testing should include unit testing specific to the programming language/framework you choose!
+\par \textbf{Catalog page (Admin)} — Adds an \emph{Add New Flower} button, and Edit / Delete actions for each row.
 
-\par The goal is to demonstrate that the implemented system satisfies the requirements defined in the analysis phase.
+\par \textbf{Export} — The export buttons in the header allow downloading the catalog as JSON or CSV regardless of role.
+
+\par Default credentials:
+\begin{itemize}
+    \item Admin: \texttt{admin@flowershop.com} / \texttt{admin123}
+    \item Florist: \texttt{florist@flowershop.com} / \texttt{flower123}
+\end{itemize}
 
 
+\section{Testing and Validation}
+
+\par Both services include unit tests written with Python's \texttt{unittest} module.
+
+\subsection{Catalog Service Tests}
+
+\par The tests are located in \texttt{catalog\_service/test\_catalog.py}. An in-memory SQLite database is used in \texttt{setUp} so tests are isolated and do not modify the production database.
+
+\par The following scenarios are covered:
+
+\begin{itemize}
+    \item \textbf{test\_query\_returns\_all\_flowers} — \texttt{get\_catalog()} with no filters returns all inserted flowers.
+    \item \textbf{test\_query\_filter\_by\_color} — \texttt{get\_catalog(color='Red')} returns only red flowers.
+    \item \textbf{test\_query\_filter\_no\_match\_returns\_empty} — filtering by a color with no matches returns an empty list.
+    \item \textbf{test\_add\_flower\_command} — \texttt{AddFlowerCommand.execute()} inserts a flower into the catalog.
+    \item \textbf{test\_update\_stock\_command} — \texttt{UpdateStockCommand.execute()} correctly modifies the stock field.
+    \item \textbf{test\_update\_flower\_command} — \texttt{UpdateFlowerCommand.execute()} updates all fields of an existing flower.
+    \item \textbf{test\_delete\_flower\_command} — \texttt{DeleteFlowerCommand.execute()} removes the flower; subsequent \texttt{get\_by\_id} returns \texttt{None}.
+\end{itemize}
+
+\subsection{Identity Service Tests}
+
+\par The tests are located in \texttt{identity\_service/test\_identity.py}. The repository's \texttt{get\_user\_by\_credentials} method is mocked to avoid database access.
+
+\begin{itemize}
+    \item \textbf{test\_login\_success} — valid credentials return a dict with the correct role and email.
+    \item \textbf{test\_login\_failure} — invalid credentials return \texttt{None}.
+\end{itemize}
+
+\par To run the tests:
+\begin{itemize}
+    \item \texttt{cd catalog\_service \&\& python -m unittest test\_catalog.py -v}
+    \item \texttt{cd identity\_service \&\& python -m unittest test\_identity.py -v}
+\end{itemize}
