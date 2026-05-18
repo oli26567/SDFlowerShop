@@ -1,77 +1,46 @@
 @startuml sequence_diagram
 autonumber
 
-title Flower Shop -- Sequence Diagram: Admin Adds a New Flower
+title Flower Shop -- Sequence Diagram: Admin Adds a Flower
 
-actor Administrator as Admin
-participant "FlowerController" as FC
-participant "FlowerService" as FS
-participant "AddFlowerCommand" as CMD
-participant "FlowerRepository" as Repo
-participant "NotificationService" as NS
-database "flowers.db" as DB
+actor Admin
+participant FlowerController
+participant FlowerService
+participant AddFlowerCommand
+participant FlowerRepository
+participant NotificationService
 
-== Authentication ==
+== 1. Login ==
 
-Admin -> FC : POST /login\n{email, password}
-activate FC
-FC -> FS : login delegated to identity_service
-activate FS
-FS --> FC : {role, email, name}
-deactivate FS
-FC --> Admin : redirect /catalog (session set)
-deactivate FC
+Admin -> FlowerController : POST /login {email, password}
+FlowerController --> Admin : session set, redirect /catalog
 
-== Navigate to Add Form ==
+== 2. Open Add-Flower Form ==
 
-Admin -> FC : GET /add
-activate FC
-FC --> Admin : render add_flower.html
-deactivate FC
+Admin -> FlowerController : GET /add
+FlowerController --> Admin : show add_flower.html
 
-== Submit New Flower ==
+== 3. Submit New Flower ==
 
-Admin -> FC : POST /add\n{name, color, price, stock}
-activate FC
-FC -> FS : add_new_flower("Admin", email,\n"Tulip", "Yellow", 5.0, 10)
-activate FS
+Admin -> FlowerController : POST /add {name, color, price, stock}
+FlowerController -> FlowerService : add_new_flower(...)
+FlowerService -> AddFlowerCommand : execute()
+AddFlowerCommand -> FlowerRepository : add_flower(...)
+FlowerRepository --> AddFlowerCommand : saved
+AddFlowerCommand --> FlowerService : done
 
-group Command Pattern
-    FS -> CMD : AddFlowerCommand(repo,\n"Tulip", "Yellow", 5.0, 10)
-    activate CMD
-    CMD -> Repo : add_flower("Tulip", "Yellow", 5.0, 10)
-    activate Repo
-    Repo -> DB : INSERT INTO flowers
-    DB --> Repo : ok
-    Repo --> CMD : done
-    deactivate Repo
-    CMD --> FS : done
-    deactivate CMD
-end
+== 4. Send Notification ==
 
-group Observer Pattern
-    FS -> NS : notify("CREATED", "Flower: Tulip", email)
-    activate NS
-    NS --> FS : email simulated
-    deactivate NS
-end
+FlowerService -> NotificationService : notify("CREATED", flower, email)
+NotificationService --> FlowerService : ok
+FlowerService --> FlowerController : done
+FlowerController --> Admin : redirect /catalog
 
-FS --> FC : done
-deactivate FS
-FC --> Admin : redirect /catalog
-deactivate FC
+== 5. View Updated Catalog ==
 
-== View Updated Catalog ==
-
-Admin -> FC : GET /catalog
-activate FC
-FC -> Repo : get_filtered_sorted(None, None)
-activate Repo
-Repo -> DB : SELECT * FROM flowers
-DB --> Repo : rows
-Repo --> FC : [Flower, ..., Tulip]
-deactivate Repo
-FC --> Admin : render home.html (catalog with new flower)
-deactivate FC
+Admin -> FlowerController : GET /catalog
+FlowerController -> FlowerRepository : get_all()
+FlowerRepository --> FlowerController : [flowers list]
+FlowerController --> Admin : show catalog with new flower
 
 @enduml

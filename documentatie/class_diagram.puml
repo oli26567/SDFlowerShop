@@ -1,10 +1,15 @@
 @startuml class_diagram
 skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
 
 title Flower Shop -- Class Diagram
 
-' ── Domain ──────────────────────────────────────────────────────
-package "Domain" {
+' ═══════════════════════════════════════════
+'  CATALOG SERVICE
+' ═══════════════════════════════════════════
+package "Catalog Service" {
+
     class Flower {
         + id : int
         + name : str
@@ -13,176 +18,112 @@ package "Domain" {
         + stock : int
     }
 
-    class User {
-        + user_id : int
-        + name : str
-        + email : str
-        + password : str
-        + role : str
-    }
-}
-
-' ── Repository ──────────────────────────────────────────────────
-package "Repository" {
     class FlowerRepository {
-        - db_path : str
         + get_all() : List[Flower]
-        + get_by_id(id) : Flower
-        + get_filtered_sorted(color, sort_by) : List[Flower]
-        + add_flower(name, color, price, stock)
-        + update_stock(id, stock)
-        + update_flower(id, name, color, price, stock)
+        + add_flower(...)
+        + update_flower(...)
         + delete_flower(id)
     }
 
-    class UserRepository {
-        - db_path : str
-        + get_user_by_credentials(email, pwd) : User
-    }
-}
-
-FlowerRepository ..> Flower : creates
-UserRepository ..> User : creates
-
-' ── Commands (Command Pattern) ──────────────────────────────────
-package "Commands" {
     abstract class Command {
         + {abstract} execute()
     }
-
     class AddFlowerCommand {
-        - repository : FlowerRepository
-        - name : str
-        - color : str
-        - price : float
-        - stock : int
         + execute()
     }
-
-    class UpdateStockCommand {
-        - repository : FlowerRepository
-        - id : int
-        - stock : int
-        + execute()
-    }
-
     class UpdateFlowerCommand {
-        - repository : FlowerRepository
-        - flower_id : int
-        - name : str
-        - color : str
-        - price : float
-        - stock : int
         + execute()
     }
-
     class DeleteFlowerCommand {
-        - repository : FlowerRepository
-        - flower_id : int
         + execute()
     }
 
-    Command <|-- AddFlowerCommand
-    Command <|-- UpdateStockCommand
-    Command <|-- UpdateFlowerCommand
-    Command <|-- DeleteFlowerCommand
-
-    AddFlowerCommand --> FlowerRepository
-    UpdateStockCommand --> FlowerRepository
-    UpdateFlowerCommand --> FlowerRepository
-    DeleteFlowerCommand --> FlowerRepository
-}
-
-' ── Queries (CQRS) ──────────────────────────────────────────────
-package "Queries" {
     class FlowerQueryService {
-        - repository : FlowerRepository
         + get_catalog(color, sort) : List[Flower]
         + get_by_id(id) : Flower
     }
 
-    FlowerQueryService --> FlowerRepository
-}
-
-' ── Exporters (Template Pattern) ────────────────────────────────
-package "Exporters" {
     abstract class FlowerExporter {
         + export(flowers) : str
         + {abstract} transform(data) : str
     }
-
     class JsonExport {
         + transform(data) : str
     }
-
     class CsvExport {
         + transform(data) : str
     }
 
-    FlowerExporter <|-- JsonExport
-    FlowerExporter <|-- CsvExport
-}
-
-' ── Service (Observer Pattern) ──────────────────────────────────
-package "Service" {
-    class Subject {
-        - _observers : list
-        + attach(observer)
-        + notify(action, detail, email)
+    class FlowerService {
+        + add_new_flower(...)
+        + update_flower_stock(...)
+        + delete_flower(...)
     }
 
     class NotificationService {
         + update(action, detail, email)
     }
 
-    class FlowerService {
-        - repository : FlowerRepository
-        - query_service : FlowerQueryService
-        + add_new_flower(role, email, name, color, price, stock)
-        + update_flower_stock(role, email, id, stock)
-        + delete_flower(role, email, id)
-        + execute_command(command : Command)
-    }
-
-    class UserService {
-        - repository : UserRepository
-        + login(email, password) : dict
-    }
-
-    Subject <|-- FlowerService
-    FlowerService --> FlowerQueryService
-    FlowerService --> FlowerRepository
-    FlowerService ..> Command : executes
-    FlowerService --> NotificationService : notifies
-    UserService --> UserRepository
-}
-
-' ── Controller ──────────────────────────────────────────────────
-package "Controller" {
     class FlowerController {
-        - flower_service : FlowerService
-        - query_service : FlowerQueryService
-        - repo : FlowerRepository
-        + index()
-        + login()
-        + visitor_access()
         + catalog_view()
         + add()
-        + update_stock(flower_id)
-        + edit_flower(flower_id)
-        + delete_flower(flower_id)
+        + edit_flower(id)
+        + delete_flower(id)
         + export_data(fmt)
-        + logout()
     }
 
-    class UserController {
-        - user_service : UserService
-        + login()
-    }
+    ' Relationships inside Catalog Service
+    FlowerRepository ..> Flower : creates
+
+    Command <|-- AddFlowerCommand
+    Command <|-- UpdateFlowerCommand
+    Command <|-- DeleteFlowerCommand
+
+    AddFlowerCommand    --> FlowerRepository
+    UpdateFlowerCommand --> FlowerRepository
+    DeleteFlowerCommand --> FlowerRepository
+
+    FlowerQueryService  --> FlowerRepository
+
+    FlowerExporter <|-- JsonExport
+    FlowerExporter <|-- CsvExport
+
+    FlowerService --> FlowerRepository
+    FlowerService --> FlowerQueryService
+    FlowerService ..> Command            : executes
+    FlowerService --> NotificationService : notifies
 
     FlowerController --> FlowerService
     FlowerController --> FlowerQueryService
     FlowerController ..> FlowerExporter : uses
+}
+
+' ═══════════════════════════════════════════
+'  IDENTITY SERVICE
+' ═══════════════════════════════════════════
+package "Identity Service" {
+
+    class User {
+        + user_id : int
+        + email : str
+        + role : str
+    }
+
+    class UserRepository {
+        + get_user_by_credentials(email, pwd) : User
+    }
+
+    class UserService {
+        + login(email, password) : dict
+    }
+
+    class UserController {
+        + login()
+    }
+
+    ' Relationships inside Identity Service
+    UserRepository ..> User : creates
+    UserService    --> UserRepository
     UserController --> UserService
 }
 

@@ -38,6 +38,16 @@ class TestIdentityService(unittest.TestCase):
         self.assertIsNone(result)
         print(f"  >> Login rejected. Returned: {result}")
 
+    def test_login_missing_email_returns_none(self):
+        print("\n[AUTH] UserService.login() returns None for missing or empty email")
+
+        result_none = self.user_service.login(None, "pass")
+        self.assertIsNone(result_none)
+
+        result_empty = self.user_service.login("", "pass")
+        self.assertIsNone(result_empty)
+
+        print(f"  >> Login rejected for missing email. Results: None={result_none}, Empty={result_empty}")
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

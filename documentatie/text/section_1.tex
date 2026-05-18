@@ -54,7 +54,7 @@ The system allows users to browse, manage, and export a catalog of flowers, with
 
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.45]{resources/UseCase.drawio.png}
+\includegraphics[width=0.75\textwidth]{resources/usecasediagram.png}
 \caption{Use Case Diagram}
 \end{figure}
 
@@ -87,7 +87,7 @@ The system allows users to browse, manage, and export a catalog of flowers, with
 
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.6]{resources/ERD.drawio.png}
+\includegraphics[width=0.55\textwidth]{resources/erdiagram.png}
 \caption{Entity-Relationship Diagram}
 \end{figure}
 
@@ -117,7 +117,7 @@ It exposes a single endpoint: \texttt{POST /login}, which accepts an email and p
 \par Three design patterns are applied in the implementation:
 
 \paragraph{Command Pattern (Behavioral)}
-\par The \texttt{Command} abstract class defines a single \texttt{execute()} method. Every write operation — \texttt{AddFlowerCommand}, \texttt{UpdateStockCommand}, \texttt{UpdateFlowerCommand}, and \texttt{DeleteFlowerCommand} — is encapsulated as a concrete command object that stores its own repository reference. \texttt{FlowerService.execute\_command()} dispatches commands uniformly, decoupling the UI event from the repository call.
+\par The \texttt{Command} abstract class defines a single \texttt{execute()} method. Every write operation is encapsulated as a concrete command object: \texttt{AddFlowerCommand}, \texttt{UpdateStockCommand}, \texttt{UpdateFlowerCommand}, and \texttt{DeleteFlowerCommand}. Each command stores its own repository reference and parameters. \texttt{FlowerService} instantiates and calls the appropriate command in each service method, decoupling the business logic from the repository call.
 
 \paragraph{Template Pattern (Behavioral)}
 \par The \texttt{FlowerExporter} abstract class defines the export algorithm in its \texttt{export()} method: fetch data, then call the abstract \texttt{transform()} method. \texttt{JsonExport} and \texttt{CsvExport} subclasses implement \texttt{transform()} for their respective formats. Adding a new format requires only a new subclass.
@@ -129,15 +129,19 @@ It exposes a single endpoint: \texttt{POST /login}, which accepts an email and p
 
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.38]{resources/ClassDiagram.drawio.png}
+\includegraphics[width=\textwidth]{resources/classdiagram.png}
 \caption{Class Diagram}
 \end{figure}
 
 \subsection{Sequence Diagram}
 
-\par The most important workflow in the system is the process of an Administrator adding a new flower. This involves the complete flow: authentication via the identity service, form submission, execution of the \texttt{AddFlowerCommand}, and triggering the \texttt{NotificationService} observer.
+\par The most important workflow in the system is the process of an Administrator adding a new flower. The diagram shows the complete flow from form submission, through the service layer, to the execution of \texttt{AddFlowerCommand} on the repository, and finally the \texttt{NotificationService} observer being triggered to simulate an email notification.
 
-\par The sequence diagram illustrating this workflow is presented in the \texttt{documentatie/sequence\_diagram.puml} file.
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{resources/seqdiagram.png}
+\caption{Sequence Diagram — Admin Adds a Flower}
+\end{figure}
 
 
 \section{Implementation Phase — Application}
