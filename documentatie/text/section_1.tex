@@ -65,7 +65,7 @@ The system allows users to browse, manage, and export a catalog of flowers, with
 
 \par The system follows a \textbf{microservices architecture}. Each service is an independent Python/Flask application with its own SQLite database, its own layered internal structure, and no shared state.
 
-\par The two services communicate via synchronous HTTP: when a user submits login credentials through the catalog service web interface, the catalog service makes a POST request to the identity service at \texttt{http://localhost:5001/login} and receives back the user role and name.
+\par The browser client communicates with the catalog service through JSON API endpoints. During login, the catalog API calls the identity service at \texttt{http://localhost:5001/login} and receives back the user role and name.
 
 \par Both services implement a four-layer internal architecture:
 \begin{enumerate}
@@ -95,14 +95,14 @@ The system allows users to browse, manage, and export a catalog of flowers, with
 
 \par The catalog service is the main application. It is responsible for:
 \begin{itemize}
-    \item Rendering the web interface (HTML templates via Jinja2).
+    \item Serving the static client application.
     \item Performing CRUD operations on the flowers database.
     \item Enforcing role-based access control (Admin, Florist, Visitor).
     \item Communicating with the identity service for authentication.
     \item Exporting catalog data in JSON and CSV format.
 \end{itemize}
 
-\par Its internal layers are: \texttt{FlowerController} (controller), \texttt{FlowerService} (service), \texttt{Flower} (domain), \texttt{FlowerRepository} (repository).
+\par Its internal layers are: \texttt{ApiController} (controller), \texttt{FlowerService} (service), \texttt{Flower} (domain), \texttt{FlowerRepository} (repository).
 Read operations pass through \texttt{FlowerQueryService}, while write operations are encapsulated as \texttt{Command} objects.
 
 \subsection{Identity Service}
@@ -150,9 +150,9 @@ It exposes a single endpoint: \texttt{POST /login}, which accepts an email and p
 
 \begin{itemize}
     \item \textbf{Python 3.13} — primary programming language for both services.
-    \item \textbf{Flask} — lightweight web framework used to implement HTTP routes and render HTML templates.
+    \item \textbf{Flask} — lightweight web framework used to implement HTTP API routes and serve the static client.
     \item \textbf{SQLite} — embedded relational database. Each service has its own \texttt{.db} file.
-    \item \textbf{Jinja2} — HTML templating engine bundled with Flask, used for the web interface.
+    \item \textbf{HTML/CSS/JavaScript} — used for the independent browser client.
     \item \textbf{unittest} — Python standard library testing framework, used for unit tests in both services.
     \item \textbf{requests} — HTTP client library used by the catalog service to call the identity service.
 \end{itemize}
@@ -164,7 +164,8 @@ It exposes a single endpoint: \texttt{POST /login}, which accepts an email and p
 \par The repository contains two top-level service directories:
 
 \begin{itemize}
-    \item \texttt{catalog\_service/} — contains \texttt{app.py} (bootstrap), \texttt{controllers/flower\_controller.py}, \texttt{FlowerService.py}, \texttt{queries.py}, \texttt{commands.py}, \texttt{repositories.py}, \texttt{entities.py}, \texttt{exporters.py}, \texttt{templates/}, and \texttt{test\_catalog.py}.
+    \item \texttt{catalog\_service/} — contains \texttt{app.py} (bootstrap), \texttt{controllers/api\_controller.py}, \texttt{FlowerService.py}, \texttt{queries.py}, \texttt{commands.py}, \texttt{repositories.py}, \texttt{entities.py}, \texttt{exporters.py}, \texttt{test\_catalog.py}, and \texttt{test\_api.py}.
+    \item \texttt{client/} — contains the browser interface, translation dictionaries, CSS, JavaScript, and the local Socket.IO client library.
     \item \texttt{identity\_service/} — contains \texttt{app.py} (bootstrap), \texttt{controllers/user\_controller.py}, \texttt{UserService.py}, \texttt{repositories.py}, \texttt{entities.py}, and \texttt{test\_identity.py}.
 \end{itemize}
 
@@ -232,3 +233,63 @@ It exposes a single endpoint: \texttt{POST /login}, which accepts an email and p
     \item \texttt{cd catalog\_service \&\& python -m unittest test\_catalog.py -v}
     \item \texttt{cd identity\_service \&\& python -m unittest test\_identity.py -v}
 \end{itemize}
+
+\section{Final Project Extension}
+
+\par The final version extends the previous Flower Shop application into a clearer client--server system. The domain and roles remain unchanged: Visitors can browse public catalog information, Florists can update stock after authentication, and Administrators can manage all flower entities.
+
+\subsection{Client--Server Architecture}
+
+\par The backend exposes structured HTTP API endpoints under \texttt{/api}. The browser client is implemented separately in the \texttt{client/} folder and communicates with the server using \texttt{fetch}. The server remains responsible for business logic, persistence, authorization, export generation, and error handling.
+
+\par Important endpoints include:
+\begin{itemize}
+    \item \texttt{POST /api/login} and \texttt{POST /api/logout} for session management.
+    \item \texttt{POST /api/visitor} for visitor access.
+    \item \texttt{GET /api/flowers} for listing, filtering, and sorting flowers.
+    \item \texttt{POST /api/flowers}, \texttt{PUT /api/flowers/<id>}, and \texttt{DELETE /api/flowers/<id>} for administrator CRUD operations.
+    \item \texttt{PATCH /api/flowers/<id>/stock} for stock updates by Administrators and Florists.
+    \item \texttt{GET /api/export/json} and \texttt{GET /api/export/csv} for catalog export.
+\end{itemize}
+
+\subsection{Internationalization}
+
+\par The client provides dynamic internationalization in English and Romanian. Translation dictionaries are stored in \texttt{client/i18n/en.js} and \texttt{client/i18n/ro.js}. The selected language is applied immediately in the interface and saved in browser local storage.
+
+\subsection{Real-Time Chat}
+
+\par Real-time chat is implemented with Flask-SocketIO. The client emits a \texttt{chat\_message} event containing sender and text. The server adds a timestamp and broadcasts the message to all connected clients. Messages appear in the chat panel without refreshing the page.
+
+\subsection{Graceful Error Handling}
+
+\par API errors are returned in a consistent JSON format:
+\begin{minted}{json}
+{
+  "message": "Only administrators can perform this action.",
+  "code": "FORBIDDEN",
+  "timestamp": "2026-05-23T12:00:00+00:00"
+}
+\end{minted}
+
+\par The client catches failed requests and displays friendly messages in the interface. Validation errors, authentication errors, authorization errors, missing resources, and unexpected server failures are handled without exposing internal implementation details.
+
+\subsection{Final Run Instructions}
+
+\par Install dependencies from the repository root:
+\begin{itemize}
+    \item \texttt{pip install -r requirements.txt}
+\end{itemize}
+
+\par Initialize the databases if needed:
+\begin{itemize}
+    \item \texttt{cd identity\_service \&\& python db\_setup.py}
+    \item \texttt{cd catalog\_service \&\& python db\_setup.py}
+\end{itemize}
+
+\par Start the services:
+\begin{itemize}
+    \item Terminal 1: \texttt{cd identity\_service \&\& python app.py}
+    \item Terminal 2: \texttt{cd catalog\_service \&\& python app.py}
+\end{itemize}
+
+\par Open \texttt{http://localhost:5002}. The first screen is the client application, and all final project functionality is implemented through the API-driven client.

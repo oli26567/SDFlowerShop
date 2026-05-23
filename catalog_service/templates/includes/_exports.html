@@ -1,6 +1,0 @@
-<div style="margin: 15px 0; padding: 10px; border: 1px solid #ddd;">
-    <strong>Download Catalog:</strong>
-    <a href="{{ url_for('export_data', fmt='json', color=request.args.get('color'), sort=request.args.get('sort')) }}">JSON</a> |
-    <a href="{{ url_for('export_data', fmt='csv', color=request.args.get('color'), sort=request.args.get('sort')) }}">CSV</a> |
-    <a href="{{ url_for('export_data', fmt='xml', color=request.args.get('color'), sort=request.args.get('sort')) }}">XML</a>
-</div>

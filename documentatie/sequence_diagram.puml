@@ -1,10 +1,11 @@
 @startuml sequence_diagram
 autonumber
 
-title Flower Shop -- Sequence Diagram: Admin Adds a Flower
+title Flower Shop -- Sequence Diagram: Admin Adds a Flower Through API Client
 
 actor Admin
-participant FlowerController
+participant WebClient
+participant ApiController
 participant FlowerService
 participant AddFlowerCommand
 participant FlowerRepository
@@ -12,35 +13,34 @@ participant NotificationService
 
 == 1. Login ==
 
-Admin -> FlowerController : POST /login {email, password}
-FlowerController --> Admin : session set, redirect /catalog
+Admin -> WebClient : enter credentials
+WebClient -> ApiController : POST /api/login {email, password}
+ApiController --> WebClient : {user}
+WebClient --> Admin : show admin controls
 
-== 2. Open Add-Flower Form ==
+== 2. Submit New Flower ==
 
-Admin -> FlowerController : GET /add
-FlowerController --> Admin : show add_flower.html
-
-== 3. Submit New Flower ==
-
-Admin -> FlowerController : POST /add {name, color, price, stock}
-FlowerController -> FlowerService : add_new_flower(...)
+Admin -> WebClient : submit flower form
+WebClient -> ApiController : POST /api/flowers {name, color, price, stock}
+ApiController -> FlowerService : add_new_flower(...)
 FlowerService -> AddFlowerCommand : execute()
 AddFlowerCommand -> FlowerRepository : add_flower(...)
 FlowerRepository --> AddFlowerCommand : saved
 AddFlowerCommand --> FlowerService : done
 
-== 4. Send Notification ==
+== 3. Send Notification ==
 
 FlowerService -> NotificationService : notify("CREATED", flower, email)
 NotificationService --> FlowerService : ok
-FlowerService --> FlowerController : done
-FlowerController --> Admin : redirect /catalog
+FlowerService --> ApiController : created id
+ApiController --> WebClient : 201 {flower}
 
-== 5. View Updated Catalog ==
+== 4. Refresh Catalog ==
 
-Admin -> FlowerController : GET /catalog
-FlowerController -> FlowerRepository : get_all()
-FlowerRepository --> FlowerController : [flowers list]
-FlowerController --> Admin : show catalog with new flower
+WebClient -> ApiController : GET /api/flowers
+ApiController -> FlowerRepository : get_filtered_sorted()
+FlowerRepository --> ApiController : [flowers list]
+ApiController --> WebClient : {flowers}
+WebClient --> Admin : render updated catalog
 
 @enduml

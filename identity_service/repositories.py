@@ -1,9 +1,10 @@
 import sqlite3
+from pathlib import Path
 from entities import User
 
 class UserRepository:
-    def __init__(self):
-        self.db_path = 'users.db'
+    def __init__(self, db_path=None):
+        self.db_path = db_path or Path(__file__).resolve().with_name('users.db')
 
     def get_user_by_credentials(self, email, password):
         with sqlite3.connect(self.db_path) as conn:

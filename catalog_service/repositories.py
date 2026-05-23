@@ -1,10 +1,11 @@
 import sqlite3
+from pathlib import Path
 from entities import Flower
 
 
 class FlowerRepository:
-    def __init__(self):
-        self.db_path = 'flowers.db'
+    def __init__(self, db_path=None):
+        self.db_path = db_path or Path(__file__).resolve().with_name('flowers.db')
 
     def _get_connection(self):
         return sqlite3.connect(self.db_path)
@@ -50,18 +51,21 @@ class FlowerRepository:
                 (name, color, price, stock)
             )
             conn.commit()
+            return cur.lastrowid
 
     def update_stock(self, flower_id, new_stock):
         with self._get_connection() as conn:
             cur = conn.cursor()
             cur.execute("UPDATE flowers SET stock = ? WHERE id = ?", (new_stock, flower_id))
             conn.commit()
+            return cur.rowcount
 
     def delete_flower(self, flower_id):
         with self._get_connection() as conn:
             cur = conn.cursor()
             cur.execute("DELETE FROM flowers WHERE id = ?", (flower_id,))
             conn.commit()
+            return cur.rowcount
 
     def update_flower(self, flower_id, name, color, price, stock):
         with self._get_connection() as conn:
@@ -71,3 +75,4 @@ class FlowerRepository:
                 (name, color, price, stock, flower_id)
             )
             conn.commit()
+            return cur.rowcount

@@ -1,7 +1,9 @@
 import sqlite3
+from pathlib import Path
 
 def init_identity_db():
-    conn = sqlite3.connect('users.db')
+    db_path = Path(__file__).resolve().with_name('users.db')
+    conn = sqlite3.connect(db_path)
     cur = conn.cursor()
     cur.execute('''
         CREATE TABLE IF NOT EXISTS users (

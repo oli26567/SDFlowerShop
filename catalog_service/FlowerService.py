@@ -1,6 +1,4 @@
-from commands import AddFlowerCommand, UpdateStockCommand, DeleteFlowerCommand
-from queries import FlowerQueryService
-from abc import ABC, abstractmethod
+from commands import AddFlowerCommand, DeleteFlowerCommand, UpdateFlowerCommand, UpdateStockCommand
 
 
 class Subject:
@@ -40,8 +38,9 @@ class FlowerService(Subject):
         if user_role == "Admin":
             self._validate(price=price, stock=stock)
             cmd = AddFlowerCommand(self.repository, name, color, price, stock)
-            cmd.execute()
+            flower_id = cmd.execute()
             self.notify("CREATED", f"Flower: {name}", user_email)
+            return flower_id
         else:
             raise PermissionError("Only Admins can add flowers.")
 
@@ -56,6 +55,14 @@ class FlowerService(Subject):
         else:
             raise PermissionError("Unauthorized to update stock.")
 
+    def update_flower(self, user_role, user_email, flower_id, name, color, price, stock):
+        if user_role != "Admin":
+            raise PermissionError("Only Admins can edit flowers.")
+        self._validate(price=price, stock=stock)
+        cmd = UpdateFlowerCommand(self.repository, flower_id, name, color, price, stock)
+        cmd.execute()
+        self.notify("UPDATED", f"Flower: {name}", user_email)
+
     def delete_flower(self, user_role, user_email, flower_id):
         if user_role == "Admin":
             flower = self.repository.get_by_id(flower_id)
@@ -65,6 +72,3 @@ class FlowerService(Subject):
                 self.notify("DELETED", f"Flower: {flower.name}", user_email)
         else:
             raise PermissionError("Only Admins can delete flowers.")
-
-    def execute_command(self, command):
-        return command.execute()

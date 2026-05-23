@@ -2,8 +2,10 @@ from flask import Flask
 from repositories import UserRepository
 from UserService import UserService
 from controllers.user_controller import UserController
+from api_errors import register_error_handlers
 
 app = Flask(__name__)
+register_error_handlers(app)
 
 user_repo = UserRepository()
 user_service = UserService(user_repo)

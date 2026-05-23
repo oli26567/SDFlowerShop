@@ -29,6 +29,8 @@ rectangle "Flower Shop System" {
     usecase "Add Flower" as UC9
     usecase "Edit Flower" as UC10
     usecase "Delete Flower" as UC11
+    usecase "Switch Language\n(EN / RO)" as UC12
+    usecase "Use Real-Time Chat" as UC13
 
 }
 
@@ -38,13 +40,17 @@ V --> UC3
 V --> UC4
 V --> UC5
 V --> UC6
+V --> UC12
+V --> UC13
 
 F --> UC7
 F --> UC8
+F --> UC13
 
 A --> UC9
 A --> UC10
 A --> UC11
+A --> UC13
 
 UC8 ..> UC6 : <<include>>
 UC9 ..> UC6 : <<include>>

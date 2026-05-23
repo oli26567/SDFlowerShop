@@ -64,12 +64,22 @@ package "Catalog Service" {
         + update(action, detail, email)
     }
 
-    class FlowerController {
-        + catalog_view()
-        + add()
-        + edit_flower(id)
+    class ApiController {
+        + login()
+        + visitor_access()
+        + session_info()
+        + list_flowers()
+        + create_flower()
+        + update_flower(id)
+        + update_stock(id)
         + delete_flower(id)
         + export_data(fmt)
+    }
+
+    class ApiError {
+        + message : str
+        + code : str
+        + status_code : int
     }
 
     ' Relationships inside Catalog Service
@@ -93,9 +103,33 @@ package "Catalog Service" {
     FlowerService ..> Command            : executes
     FlowerService --> NotificationService : notifies
 
-    FlowerController --> FlowerService
-    FlowerController --> FlowerQueryService
-    FlowerController ..> FlowerExporter : uses
+    ApiController --> FlowerService
+    ApiController --> FlowerQueryService
+    ApiController ..> FlowerExporter : uses
+    ApiController ..> ApiError : raises
+}
+
+package "Client Application" {
+    class WebClient {
+        + renderCatalog()
+        + callApi()
+        + switchLanguage()
+        + sendChatMessage()
+    }
+
+    class TranslationDictionary {
+        + en : dict
+        + ro : dict
+    }
+
+    class SocketClient {
+        + connect()
+        + emit(message)
+        + receive(message)
+    }
+
+    WebClient --> TranslationDictionary
+    WebClient --> SocketClient
 }
 
 ' ═══════════════════════════════════════════
@@ -121,10 +155,17 @@ package "Identity Service" {
         + login()
     }
 
+    class IdentityApiError {
+        + message : str
+        + code : str
+        + timestamp : str
+    }
+
     ' Relationships inside Identity Service
     UserRepository ..> User : creates
     UserService    --> UserRepository
     UserController --> UserService
+    UserController ..> IdentityApiError
 }
 
 @enduml

@@ -1,7 +1,9 @@
 import sqlite3
+from pathlib import Path
 
 def init_catalog_db():
-    conn = sqlite3.connect('flowers.db')
+    db_path = Path(__file__).resolve().with_name('flowers.db')
+    conn = sqlite3.connect(db_path)
     cur = conn.cursor()
     cur.execute('''
         CREATE TABLE IF NOT EXISTS flowers (
@@ -17,7 +19,9 @@ def init_catalog_db():
         ('White Lily', 'White', 7.00, 50),
         ('Blue Orchid', 'Blue', 12.00, 20)
     ]
-    cur.executemany("INSERT OR IGNORE INTO flowers (name, color, price, stock) VALUES (?, ?, ?, ?)", flowers)
+    cur.execute("SELECT COUNT(*) FROM flowers")
+    if cur.fetchone()[0] == 0:
+        cur.executemany("INSERT INTO flowers (name, color, price, stock) VALUES (?, ?, ?, ?)", flowers)
     conn.commit()
     conn.close()
     print("Catalog database (flowers.db) initialized.")

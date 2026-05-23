@@ -6,10 +6,11 @@ class Flower:
         self.price = price
         self.stock = stock
 
-class User:
-    def __init__(self, user_id, name, email, password, role):
-        self.user_id = user_id
-        self.name = name
-        self.email = email
-        self.password = password
-        self.role = role #admin, florist, visitor
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "color": self.color,
+            "price": self.price,
+            "stock": self.stock,
+        }
