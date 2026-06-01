@@ -1,0 +1,50 @@
+\documentclass[11pt,a4paper]{article}
+
+%biblioteci
+\usepackage[english]{babel}  % bibliografia si cuprinsul sa fie in engleza
+%\usepackage[romanian]{babel}  % bibliografia si cuprinsul sa fie in romana
+% \usepackage{times} % times new roman
+\usepackage{csquotes} % pt warning
+
+\usepackage{indentfirst} % pentru ca si primul paragraf sa aiba alineat
+\usepackage{graphicx}  % pentru inserare imagini
+\usepackage{float} % pt asezare imagini in pagina
+\usepackage{hyperref} % pt cuprins cu linkuri catre sectiuni
+\usepackage{minted} % pt cod
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+\usepackage{biblatex}
+\addbibresource{refs.bib}
+
+% format document(margin)
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+\linespread{1.06} % spatiu intre cuvinte
+\setlength{\parskip}{8pt plus2pt minus2pt} % spatiu intre paragrafe
+
+% widow and orphan lines
+\widowpenalty 10000
+\clubpenalty 10000
+
+\newcommand{\eat}[1]{}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+%puncte si dupa fiecare sectiune in cuprins
+\usepackage{tocloft}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+\begin{document}
+
+\include{text/title_page}
+\tableofcontents
+\include{text/section_1}
+
+\nocite{*}
+\printbibliography
+
+\end{document}

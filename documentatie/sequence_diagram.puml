@@ -1,0 +1,46 @@
+@startuml sequence_diagram
+autonumber
+
+title Flower Shop -- Sequence Diagram: Admin Adds a Flower Through API Client
+
+actor Admin
+participant WebClient
+participant ApiController
+participant FlowerService
+participant AddFlowerCommand
+participant FlowerRepository
+participant NotificationService
+
+== 1. Login ==
+
+Admin -> WebClient : enter credentials
+WebClient -> ApiController : POST /api/login {email, password}
+ApiController --> WebClient : {user}
+WebClient --> Admin : show admin controls
+
+== 2. Submit New Flower ==
+
+Admin -> WebClient : submit flower form
+WebClient -> ApiController : POST /api/flowers {name, color, price, stock}
+ApiController -> FlowerService : add_new_flower(...)
+FlowerService -> AddFlowerCommand : execute()
+AddFlowerCommand -> FlowerRepository : add_flower(...)
+FlowerRepository --> AddFlowerCommand : saved
+AddFlowerCommand --> FlowerService : done
+
+== 3. Send Notification ==
+
+FlowerService -> NotificationService : notify("CREATED", flower, email)
+NotificationService --> FlowerService : ok
+FlowerService --> ApiController : created id
+ApiController --> WebClient : 201 {flower}
+
+== 4. Refresh Catalog ==
+
+WebClient -> ApiController : GET /api/flowers
+ApiController -> FlowerRepository : get_filtered_sorted()
+FlowerRepository --> ApiController : [flowers list]
+ApiController --> WebClient : {flowers}
+WebClient --> Admin : render updated catalog
+
+@enduml

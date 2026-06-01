@@ -1,0 +1,60 @@
+@startuml use_case_diagram
+left to right direction
+
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor #FFF8F0
+    BorderColor #C08080
+}
+
+title Flower Shop -- Use Case Diagram
+
+actor Visitor as V
+actor Florist as F
+actor Administrator as A
+
+F --|> V
+A --|> F
+
+rectangle "Flower Shop System" {
+
+    usecase "View Catalog" as UC1
+    usecase "Filter by Color" as UC2
+    usecase "Sort Flowers" as UC3
+    usecase "Export Catalog\n(JSON / CSV)" as UC4
+    usecase "Browse as Guest" as UC5
+    usecase "Login" as UC6
+    usecase "Logout" as UC7
+    usecase "Update Stock" as UC8
+    usecase "Add Flower" as UC9
+    usecase "Edit Flower" as UC10
+    usecase "Delete Flower" as UC11
+    usecase "Switch Language\n(EN / RO)" as UC12
+    usecase "Use Real-Time Chat" as UC13
+
+}
+
+V --> UC1
+V --> UC2
+V --> UC3
+V --> UC4
+V --> UC5
+V --> UC6
+V --> UC12
+V --> UC13
+
+F --> UC7
+F --> UC8
+F --> UC13
+
+A --> UC9
+A --> UC10
+A --> UC11
+A --> UC13
+
+UC8 ..> UC6 : <<include>>
+UC9 ..> UC6 : <<include>>
+UC10 ..> UC6 : <<include>>
+UC11 ..> UC6 : <<include>>
+
+@enduml

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Flower Shop</title>
+    <link rel="stylesheet" href="/app/styles.css">
+</head>
+<body>
+    <nav class="topbar">
+        <div class="nav-spacer"></div>
+        <div class="nav-brand">Flower Garden Catalog</div>
+        <div class="topbar-actions">
+            <select id="languageSelect" aria-label="Language">
+                <option value="en">English</option>
+                <option value="ro">Romana</option>
+            </select>
+            <span id="currentUser" class="user-pill">Visitor</span>
+            <button id="logoutBtn" class="ghost hidden" type="button" data-i18n="logout">Logout</button>
+        </div>
+    </nav>
+
+    <main class="layout">
+        <section class="auth-panel" id="authPanel">
+            <h2 data-i18n="signInTitle">Sign in</h2>
+            <form id="loginForm" class="stack">
+                <label>
+                    <span data-i18n="email">Email</span>
+                    <input id="email" type="email" autocomplete="username" required>
+                </label>
+                <label>
+                    <span data-i18n="password">Password</span>
+                    <input id="password" type="password" autocomplete="current-password" required>
+                </label>
+                <div class="button-row">
+                    <button type="submit" data-i18n="login">Login</button>
+                    <button id="visitorBtn" type="button" class="secondary" data-i18n="browseVisitor">Browse as visitor</button>
+                </div>
+            </form>
+            <p class="hint" data-i18n="defaultCredentials">Admin: admin@flowershop.com / admin123. Florist: florist@flowershop.com / flower123.</p>
+        </section>
+
+        <section class="workspace">
+            <div id="messageArea" class="message hidden"></div>
+
+            <div class="toolbar">
+                <label>
+                    <span data-i18n="filterColor">Filter color</span>
+                    <select id="colorFilter"></select>
+                </label>
+                <label>
+                    <span data-i18n="sortBy">Sort by</span>
+                    <select id="sortSelect">
+                        <option value="" data-i18n="sortNone">Default</option>
+                        <option value="name" data-i18n="sortName">Name</option>
+                        <option value="price_asc" data-i18n="sortPriceAsc">Price ascending</option>
+                        <option value="price_desc" data-i18n="sortPriceDesc">Price descending</option>
+                    </select>
+                </label>
+                <button id="applyFiltersBtn" type="button" class="secondary" data-i18n="apply">Apply</button>
+                <a class="link-button" href="/api/export/json" data-i18n="exportJson">Export JSON</a>
+                <a class="link-button" href="/api/export/csv" data-i18n="exportCsv">Export CSV</a>
+            </div>
+
+            <form id="flowerForm" class="flower-form hidden">
+                <input type="hidden" id="flowerId">
+                <label>
+                    <span data-i18n="flowerName">Name</span>
+                    <input id="flowerName" required>
+                </label>
+                <label>
+                    <span data-i18n="flowerColor">Color</span>
+                    <select id="flowerColor" required></select>
+                </label>
+                <label>
+                    <span data-i18n="price">Price</span>
+                    <input id="flowerPrice" type="number" min="0.01" step="0.01" required>
+                </label>
+                <label>
+                    <span data-i18n="stock">Stock</span>
+                    <input id="flowerStock" type="number" min="0" step="1" required>
+                </label>
+                <button type="submit" data-i18n="saveFlower">Save flower</button>
+                <button id="cancelEditBtn" type="button" class="ghost" data-i18n="cancel">Cancel</button>
+            </form>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-i18n="flowerName">Name</th>
+                            <th data-i18n="flowerColor">Color</th>
+                            <th data-i18n="price">Price</th>
+                            <th data-i18n="stock">Stock</th>
+                            <th data-i18n="actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="flowersBody"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <button id="chatToggle" class="chat-toggle" type="button" aria-label="Open chat" data-i18n="chatButton">Chat</button>
+    <aside id="chatPanel" class="chat-panel hidden">
+        <div class="chat-header">
+            <h2 data-i18n="chatTitle">Team chat</h2>
+            <button id="chatClose" class="ghost" type="button" aria-label="Close chat">x</button>
+        </div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <form id="chatForm" class="chat-form">
+            <input id="chatInput" maxlength="500" data-i18n-placeholder="chatPlaceholder" placeholder="Write a message">
+            <button type="submit" data-i18n="send">Send</button>
+        </form>
+    </aside>
+
+    <script src="/app/vendor/socket.io.min.js?v=1"></script>
+    <script src="/app/i18n/en.js?v=5"></script>
+    <script src="/app/i18n/ro.js?v=5"></script>
+    <script src="/app/app.js?v=5"></script>
+</body>
+</html>
